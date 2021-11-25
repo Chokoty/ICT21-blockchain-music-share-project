@@ -11,17 +11,16 @@ import (
 )
 
 type Music struct {
-	MusicID    string           `json:"musichash"`
-	Name       string           `json:"name"`
-	Artist     string           `json:"artist"`
-	Length     string           `json:"length"`
-	Points     []CopyrightStock `json:"points"`
-	Authorized []Certi          `json:"authorized"`
+	MusicID    string  `json:"musichash"`
+	Name       string  `json:"name"`
+	Artist     string  `json:"artist"`
+	Length     string  `json:"length"`
+	Points     Point   `json:"points"`
+	Authorized []Certi `json:"authorized"`
 }
-type CopyrightStock struct {
-	Code  string `json:"key"`
-	Owner string `json:"owner"`
-	Sale  bool   `json:"sale"`
+type Point struct {
+	Unsold int `json:"unsold"`
+	Sold   int `json:"sold"`
 }
 type Certi struct {
 	TokenHash string `json:"key"`
@@ -31,15 +30,15 @@ type Certi struct {
 	Expired   bool   `json:"expired"`
 }
 type Artist struct {
-	UserId string           `json:"key"`
-	Name   string           `json:"name"`
-	Points []CopyrightStock `json:"points"`
-	Musics []Music          `json:"musics"`
+	UserId string  `json:"key"`
+	Name   string  `json:"name"`
+	Points []Point `json:"points"`
+	Musics []Music `json:"musics"`
 }
 type User struct {
-	UserID string           `json:"key"`
-	Name   string           `json:"name"`
-	Points []CopyrightStock `json:"points"`
+	UserID string  `json:"key"`
+	Name   string  `json:"name"`
+	Points []Point `json:"points"`
 }
 type SecondCreator struct {
 	UserID        string  `json:"key"`
@@ -68,14 +67,14 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 
 	if fn == "register" {
 		result, err = t.registerMusic(APIstub, arg)
-	} else if fn == "querystock" {
-		result, err = t.querySingleStock(APIstub, arg)
-	} else if fn == "queryallstock" {
+	} else if fn == "fund" {
+		result, err = t.fundMusic(APIstub, arg)
+	} else if fn == "rent" {
+		result, err = t.buyCertification(APIstub, arg)
+	} else if fn == "share" {
+		result, err = t.shareProfit(APIstub, arg)
+	} else if fn == "query" {
 		result, err = t.queryAllStock(APIstub, arg)
-	} else if fn == "sell" {
-		result, err = t.SellMusic(APIstub, arg)
-	} else if fn == "buy" {
-		result, err = t.buyMusic(APIstub, arg)
 	} else {
 		return shim.Error("Not supporte chaincode function!!")
 	}
@@ -87,42 +86,31 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success([]byte(result))
 }
 
-// 음원 창작자 ID 생성
-func (t *MusicAsset) registerAritist(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 2 {
-		return "", fmt.Errorf("invalid number of Arguments!")
+// 제목, 아티스트, 음악길이, 지분 생성 개수를 입력받아 지분 등록
+func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	if len(args) != 4 {
+		return "", fmt.Errorf("Incorrect arguments !!")
 	}
-	id := args[0]
-	name := args[1]
-	artist := Artist{UserId: id, Name: name, Points: nil, Musics: nil}
+	// 원작자가 요청한 개수만큼 지분 생성
+	value, _ := strconv.Atoi(args[3])
+	points := t.IssueStock(APIstub, value)
 
-	artistAsBytes, _ := json.Marshal(artist)
-	err := APIstub.PutState(id, artistAsBytes)
+	var music = Music{Name: args[0], Artist: args[1], Length: args[2], Points: points, Authorized: nil}
+	musicAsBytes, _ := json.Marshal(music)
+	err := APIstub.PutState(args[0], musicAsBytes)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to register new artist: %s", err)
+		return "", fmt.Errorf("failed to set asset: %s", err)
 	}
 
-	return "", err
+	return string(musicAsBytes), nil
 }
 
-// 2차 창작자 ID 생성
-func (t *MusicAsset) register2ndCreator(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 2 {
-		return "", fmt.Errorf("invalid number of Arguments!")
-	}
-	id := args[0]
-	name := args[1]
-	_2ndCreator := SecondCreator{UserID: id, Name: name, Certification: nil}
+// 토큰 코드번호 생성 (value만큼 point 발행)
+func (t *MusicAsset) IssueStock(APIstub shim.ChaincodeStubInterface, value int) Point {
+	points := Point{Unsold: value, Sold: 0}
 
-	_2ndAsBytes, _ := json.Marshal(_2ndCreator)
-	err := APIstub.PutState(id, _2ndAsBytes)
-
-	if err != nil {
-		return "", fmt.Errorf("failed to register secondary creator: %s", err)
-	}
-
-	return "", err
+	return points
 }
 
 // 단일 지분 토큰 조회
@@ -182,40 +170,6 @@ func (t *MusicAsset) queryAllStock(APIstub shim.ChaincodeStubInterface, args []s
 	fmt.Printf("- queryAllCars:\n%s\n", buffer.String())
 
 	return buffer.String(), nil
-}
-
-// 제목, 아티스트, ID, 음악길이, 지분 생성 개수를 입력받아 지분 등록
-func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 5 {
-		return "", fmt.Errorf("Incorrect arguments !!")
-	}
-	// 원작자가 요청한 개수만큼 지분 생성
-	value, _ := strconv.Atoi(args[4])
-	head := args[0] + args[2]
-
-	points := t.IssueStock(APIstub, head, value, args[2])
-
-	var music = Music{Name: args[0], Artist: args[1], MusicID: args[2], Length: args[3], Points: points, Authorized: nil}
-	musicAsBytes, _ := json.Marshal(music)
-	err := APIstub.PutState(args[2], musicAsBytes)
-
-	if err != nil {
-		return "", fmt.Errorf("failed to set asset: %s", err)
-	}
-
-	return string(musicAsBytes), nil
-}
-
-// 토큰 코드번호 생성 (value만큼 point 발행)
-func (t *MusicAsset) IssueStock(APIstub shim.ChaincodeStubInterface, head string, value int, owner string) []CopyrightStock {
-	points := make([]CopyrightStock, value)
-	for i := 1; i <= value; i++ {
-		code := head + int2code(i)
-		points[i-1] = CopyrightStock{Code: code, Owner: owner, Sale: true}
-		pointAsBytes, _ := json.Marshal(code)
-		_ = APIstub.PutState(code, pointAsBytes)
-	}
-	return points
 }
 
 // 코드값 생성 함수
@@ -345,19 +299,19 @@ func (t *MusicAsset) queryCerti(APIstub shim.ChaincodeStubInterface, args []stri
 func (t *MusicAsset) initLedger(APIstub shim.ChaincodeStubInterface) peer.Response {
 	musics := []Music{
 		Music{MusicID: "BP8211", Name: "HYLT", Artist: "BlackPink", Length: "2:56",
-			Points: []CopyrightStock{
+			Points: []Point{
 				{Code: "BP82111", Owner: "Alice", Sale: false},
 				{Code: "BP82112", Owner: "Alice", Sale: false},
 				{Code: "BP82113", Owner: "Alice", Sale: false}},
 			Authorized: nil},
 		Music{MusicID: "NAVIS7", Name: "Savage", Artist: "Aespa", Length: "3:48",
-			Points: []CopyrightStock{
+			Points: []Point{
 				{Code: "NAVIS71", Owner: "Alice", Sale: false},
 				{Code: "NAVIS72", Owner: "Bob", Sale: true},
 				{Code: "NAVIS73", Owner: "Bob", Sale: false}},
 			Authorized: nil},
 		Music{MusicID: "BTSSTB", Name: "Permission to Dance", Artist: "BTS", Length: "3:23",
-			Points: []CopyrightStock{
+			Points: []Point{
 				{Code: "BTSSTB1", Owner: "Alice", Sale: false},
 				{Code: "BTSSTB2", Owner: "Bob", Sale: true},
 				{Code: "BTSSTB3", Owner: "Charlie", Sale: true}},
@@ -383,7 +337,7 @@ func (t *MusicAsset) sellMusic(APIstub shim.ChaincodeStubInterface, args []strin
 	}
 
 	pointAsBytes, err := APIstub.GetState(args[0]) //저작권 코드로 조회
-	copyright := CopyrightStock{}
+	copyright := Point{}
 
 	json.Unmarshal(pointAsBytes, &copyright)
 	copyright.Sale = true // 판매중 상태를 true로 변경
@@ -394,21 +348,24 @@ func (t *MusicAsset) sellMusic(APIstub shim.ChaincodeStubInterface, args []strin
 	return "", err
 }
 
-// 지분 구매
-func (t *MusicAsset) buyMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 2 {
+// 지분 구매 : 제목/구매자/구매량
+func (t *MusicAsset) fundMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	if len(args) != 3 {
 		return "", fmt.Errorf("invalid number of Arguments!")
 	}
 
-	pointAsBytes, err := APIstub.GetState(args[0]) //저작권 코드로 조회
-	copyright := CopyrightStock{}
+	musicAsBytes, err := APIstub.GetState(args[0]) //저작권 코드로 조회
+	music := Music{}
+
+	json.Unmarshal(musicAsBytes, &music)
+	copyright := Point{}
 
 	json.Unmarshal(pointAsBytes, &copyright)
 	copyright.Owner = args[1] // 소유주 변경
 	copyright.Sale = false    // 판매중 상태를 true로 변경
 
 	pointAsBytes, _ = json.Marshal(copyright)
-	APIstub.PutState(args[0], pointAsBytes)
+	err = APIstub.PutState(args[0], pointAsBytes)
 
 	return "", err
 }
