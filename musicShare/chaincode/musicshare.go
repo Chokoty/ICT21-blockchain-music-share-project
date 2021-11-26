@@ -39,10 +39,6 @@ type User struct {
 	UserID string  `json:"key"`
 	Name   string  `json:"name"`
 	Points []Point `json:"points"`
-}
-type SecondCreator struct {
-	UserID        string  `json:"key"`
-	Name          string  `json:"name"`
 	Certification []Certi `json:"certifications"`
 }
 
