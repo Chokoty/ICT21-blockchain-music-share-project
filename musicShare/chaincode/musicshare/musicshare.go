@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-  "time"
+	"time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	peer "github.com/hyperledger/fabric/protos/peer"
@@ -16,17 +16,18 @@ type Music struct {
 	Name        string     `json:"name"`
 	Artist      string     `json:"artist"`
 	Length      string     `json:"length"`
-	EntireStake int        `json:"entire_stake"` 
+	EntireStake int        `json:"entire_stake"`
 	Contracts   []Contract `json:"contracts"`
 }
 type Contract struct {
 	MusicID string `json:"musicID"` // Q : 또 필요한지
 	Owner   string `json:"owner"`   // set
-	Buyer   string `json:"buyer"`   
+	Buyer   string `json:"buyer"`
 	Stake   int    `json:"stake"`   // set
-  Date    string `json:"date"`    // set
+	Date    string `json:"date"`    // set
 	Expired string `json:"expired"` // set
 }
+
 // 객체 = 구조체 + 메서드
 type MusicAsset struct {
 }
@@ -50,15 +51,15 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 		result, err = t.registerMusic(APIstub, arg)
 	} else if fn == "set" {
 		result, err = t.setContract(APIstub, arg)
-	}else if fn == "fill" {
+	} else if fn == "fill" {
 		result, err = t.fillInContract(APIstub, arg)
 	} else if fn == "query" {
 		result, err = t.queryContract(APIstub, arg)
 	} else if fn == "expire" {
-    result, err = t.expire(APIstub, arg)
-  } else if fn == "share" {
+		result, err = t.expire(APIstub, arg)
+	} else if fn == "share" {
 		result, err = t.shareProfit(APIstub, arg)
-	} else{
+	} else {
 		return shim.Error("Not supporte chaincode function!!")
 	}
 
@@ -69,16 +70,37 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success([]byte(result))
 }
 
-// 음원 등록: 제목, 아티스트, 음악길이, 지분 생성 개수를 입력받음 
+func (t *MusicAsset) initMusic(APIstub shim.ChaincodeStubInterface) (string, error) {
+	musics := []Music{
+		Music{
+			MusicID: "0001", Name: "Savage", Artist: "Aespa", Length: "3:59", EntireStake: 200, Contracts: nil},
+		Music{
+			MusicID: "0002", Name: "작은것들을위한시", Artist: "BTS", Length: "3:12", EntireStake: 300, Contracts: nil},
+		Music{
+			MusicID: "0003", Name: "술한잔해요", Artist: "지아", Length: "4:13", EntireStake: 50, Contracts: nil},
+		Music{
+			MusicID: "0004", Name: "Tempo", Artist: "EXO", Length: "3:46", EntireStake: 150, Contracts: nil},
+		Music{
+			MusicID: "0005", Name: "Enemy", Artist: "Imagine Dragons", Length: "2:53", EntireStake: 200, Contracts: nil}}
+
+	for i := 0; i < len(musics); i++ {
+		fmt.Println("i is ", i)
+		musicAsBytes, _ := json.Marshal(musics[i])
+		APIstub.PutState(musics[i].MusicID, musicAsBytes)
+		fmt.Println("Added", musics[i])
+	}
+	return "", nil
+}
+
+// 음원 등록: musicID, 제목, 아티스트, 음악길이, 지분 생성 개수를 입력받음
 func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 4 {
+	if len(args) != 5 {
 		return "", fmt.Errorf("Incorrect arguments !!")
 	}
 	// 원작자가 요청한 개수만큼 지분 생성
-	value, _ := strconv.Atoi(args[3])
-	points := t.IssueStock(APIstub, value)
+	stake, _ := strconv.Atoi(args[3])
 
-	var music = Music{Name: args[0], Artist: args[1], Length: args[2], Points: points, Authorized: nil}
+	var music = Music{MusicID: args[0], Name: args[1], Artist: args[2], Length: args[3], EntireStake: stake}
 	musicAsBytes, _ := json.Marshal(music)
 	err := APIstub.PutState(args[0], musicAsBytes)
 
@@ -89,25 +111,27 @@ func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []s
 	return string(musicAsBytes), nil
 }
 
-// 계약서 생성 : musicId, artist, myId, stake, "date", duration
+// 계약서 생성 : musicId, myId, stake, duration
 // date 추가하기
 func (t *MusicAsset) setContract(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
-	if len(args) != 5 {
+	if len(args) != 4 {
 		return "", fmt.Errorf("Incorrect number of arguments !!")
 	}
 	// 음원명에 해당하는 Music 갖고오기 ?
-	musicAsBytes, err := APIstub.GetState(args[1])
+	musicAsBytes, err := APIstub.GetState(args[0])
 	music := Music{}
 	json.Unmarshal(musicAsBytes, &music)
-  
-	// 만료기한 설정
-	duration, _ := strconv.Atoi(args[4])
-	now := time.Now()
-	convDays := duration
-	expired := now.AddDate(0, 0, convDays).Format("2006-01-02")
-	contract := Contract{MusicID: args[0], Artist: args[1], Buyer: args[2], Stake: args[3], Expired: expired}
+	stake, _ := strconv.Atoi(args[2])
+	owner := music.Artist
 
-	music.Contracts = Append(music.Contracts, contract)
+	// 만료기한 설정
+
+	now := time.Now()
+	convDays, _ := strconv.Atoi(args[3])
+	expired := now.AddDate(0, 0, convDays).Format("2006-01-02")
+	contract := Contract{MusicID: args[0], Owner: owner, Buyer: args[1], Stake: stake, Date: "", Expired: expired}
+
+	music.Contracts = append(music.Contracts, contract)
 	musicAsBytes, _ = json.Marshal(music)
 
 	err = APIstub.PutState(args[0], musicAsBytes)
@@ -115,42 +139,43 @@ func (t *MusicAsset) setContract(APIstub shim.ChaincodeStubInterface, args []str
 }
 
 // 이용자 계약서 내용 채우기  : 음원ID -> 계약내용 추가
-// 후원자 음원 후원         - stake N 
-// 2차 창작자 음원 대여 구매 - stake 0 
-// musicID, entireStake, Buyer, Stake, Expired, Date(자동생성)
-func (t *MusicAsset) fillInContract(APIstub shim.ChaincodeStubInterface, args []string)(string, error){
-  if len(args) != 5 {
+// 후원자 음원 후원         - stake N
+// 2차 창작자 음원 대여 구매 - stake 0
+// musicID, Buyer, Stake, Date(자동생성)
+func (t *MusicAsset) fillInContract(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	if len(args) != 3 {
 		return "", fmt.Errorf("Incorrect arguments !!")
 	}
 
-  // musicID로 조회
+	// musicID로 조회
 	musicAsBytes, _ := APIstub.GetState(args[0])
 	music := Music{}
+	stake2int, _ := strconv.Atoi(args[2])
+	entire2int := music.EntireStake
 
 	err := json.Unmarshal(musicAsBytes, &music)
 
-  list := music.Contracts
-  preset := list[0]
+	// list := music.Contracts
+	// preset := list[0]
 
-  // 후원자는 entireStake 줄이기
-  if args[3] != 0{
-    // 남은 stake 체크
-    if music.EntireStake - args[1] < 0{
-      return "", fmt.Errorf("No more stake. Out of EntireStake.")
-    }
-    
-    music.EntireStake -= args[1]
-  }
+	// 후원자는 entireStake 줄이기
+	if stake2int != 0 {
+		// 남은 stake 체크
+		if music.EntireStake-entire2int < 0 {
+			return "", fmt.Errorf("No more stake. Out of EntireStake.")
+		}
 
-  // 계약내용 채우기
-  now := time.Now()
-	date := now.Format("2006-01-02")
+		music.EntireStake -= entire2int
+	}
 
-  contract := Contract{MusicID: preset[0], Artist: preset[1], Buyer: args[2], Stake: args[3], Date: date, Expired: args[4]}
+	// 계약내용 채우기
+	date := time.Now().Format("2006-01-02")
+
+	contract := Contract{MusicID: args[0], Owner: args[1], Buyer: args[2], Stake: stake2int, Date: date, Expired: args[4]}
 
 	music.Contracts = append(music.Contracts, contract)
-  
-  err = APIstub.PutState(args[0], musicAsBytes)
+
+	err = APIstub.PutState(args[0], musicAsBytes)
 	return "", err
 }
 
@@ -189,7 +214,8 @@ func (t *MusicAsset) queryContract(APIstub shim.ChaincodeStubInterface, args []s
 			buffer.WriteString("소유주: ")
 			buffer.WriteString(d.Owner)
 			buffer.WriteString(" 지분: ")
-			buffer.WriteString(d.Stake)
+			stake2str := strconv.Itoa(d.Stake)
+			buffer.WriteString(stake2str)
 			buffer.WriteString(" 만료일: ")
 			buffer.WriteString(d.Expired)
 			buffer.WriteString("\n")
@@ -221,25 +247,28 @@ func (t *MusicAsset) shareProfit(APIstub shim.ChaincodeStubInterface, args []str
 	}
 	// musicID로 조회 & 해당 음악의 지분 리스트 추출
 	musicAsBytes, err := APIstub.GetState(args[0])
-  if err != nil {
+	if err != nil {
 		return "Invalid music ID !!", err
 	}
 	music := Music{}
-	whole := args[1] // 총수익
+	whole, _ := strconv.Atoi(args[1]) // 총수익
 	err = json.Unmarshal(musicAsBytes, &music)
 
 	list := music.Contracts
 	if list == nil {
 		return "the list is empty !!", nil
 	}
-	list_d := Contracts{} // 유효 후원자 list
+	list_d := []Contract{} // 유효 후원자 list
 
 	wholeStake := music.EntireStake
-	time := time.Now().Format("2006-01-02")
+	now := time.Now().Format("2006-01-02")
+	now2int, _ := strconv.Atoi(now)
 
 	// 지분
 	for _, l := range list {
-		if l.Stake != 0 && (strconv.Atoi(l.Expired)-strconv.Atoi(time) >= 0) {
+		expired2int, _ := strconv.Atoi(l.Expired)
+		left := expired2int - now2int
+		if l.Stake != 0 && (left >= 0) {
 			list_d = append(list_d, l)
 			wholeStake += l.Stake
 		}
@@ -251,11 +280,11 @@ func (t *MusicAsset) shareProfit(APIstub shim.ChaincodeStubInterface, args []str
 		buffer.WriteString(music.MusicID)
 		buffer.WriteString(" 수익분배표\n")
 		for _, d := range list_d {
-			const share = whole * d.stake / wholeStake
+			share := whole * d.Stake / wholeStake
 			buffer.WriteString("소유주: ")
-			buffer.writeString(d.Owner)
+			buffer.WriteString(d.Owner)
 			buffer.WriteString(" 배당금: ")
-			buffer.WriteString(strconv.Itoa(wholeStake))
+			buffer.WriteString(strconv.Itoa(share))
 			buffer.WriteString("\n")
 		}
 	}
@@ -279,17 +308,26 @@ func (t *MusicAsset) expire(APIstub shim.ChaincodeStubInterface, args []string) 
 		return "the list is empty !!", nil
 	}
 
-	time := time.Now().Format("2006-01-02")
+	now := time.Now().Format("2006-01-02")
+
+	now2int, _ := strconv.Atoi(now)
+
 	// 만기된 지분 수거
 	for _, l := range list {
-		if strconv.Atoi(l.Expired)-strconv.Atoi(time) < 0 {
+		expired2int, _ := strconv.Atoi(l.Expired)
+		left := expired2int - now2int
+		if left < 0 {
 			music.EntireStake += l.Stake
 		}
 	}
 	// 원장에 저장
 	musicAsBytes, _ = json.Marshal(music)
+	err = APIstub.PutState(args[0], musicAsBytes)
+	if err != nil {
+		return "Can't update the whole stake !!", err
+	}
 
-	return buffer.String(), nil
+	return "", nil
 }
 
 func main() {
