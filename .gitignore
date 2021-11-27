@@ -1,0 +1,3 @@
+# ignore package
+/simple-web/node_modules/
+/somple-web/package-lock.json
