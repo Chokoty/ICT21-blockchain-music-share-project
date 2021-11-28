@@ -5,7 +5,11 @@
     <!-- fontawsome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/v4-shims.css">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    
     <!-- jquery 버전 유의 -->
     <!-- slim/jquery, 3.1.0 윗 버전에서 ajax가 작동하지 않는 오류 확인 -->
     <!-- Bootstrap의 CDN을 copy&paste 하되 Line 8의 버전만 3.1.0으로 수정하세요 -->
@@ -17,28 +21,72 @@
 </head>
 
 <body>
-    <div class="container">
-        <i class="fas fa-id-card-alt" style="font-size: 150px;color:gainsboro"></i>
-        <h1> 기업어음<br>프로토타입 </h1>
-        <hr>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark ">
+        <a class="navbar-brand" href="#" style="font-family: 'Fredoka One'">MuseShare</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+  
+        <div class="collapse navbar-collapse " id="navbarsExampleDefault">
+          <ul class="navbar-nav  justify-content-around">
+            <li class="nav-item ">
+              <a class="nav-link" href="#">소개 <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">후원/대여</a>
+            </li>
+            
+          </ul>
+         
+        </div>
+    </nav>
+
+    <div class="container justify-content-md-center ">
+        <div class=" starter-template" >
+            <i class="far fa-file-audio" style="font-size: 150px;color:rgb(59, 130, 211)"></i>
+            <h1 style="margin-top:20px">음원수익 공유플랫폼</h1>
+            <p class="lead">MuseShare<br> 원작자와 참여자들의 수익 공유를 통해... </p>
+        </div>
+
         <div class="row justify-content-md-center">
             <div class="col-lg">
                 <div id="new-alert"></div>
-                <h3>기업어음을 발행 합니다</h3>
-                <label  class="form-label">발행인:</label><input type="text" id="issuer" name="issuer" > <br>
-                <label  class="form-label">어음ID:</label><input type="text" id="pid" name="pid" > <br>
-                <label  class="form-label">발행일:</label><input type="text" id="idate" name="idate" > <br>
-                <label  class="form-label">만기일:</label><input type="text" id="mdate" name="mdate" > <br>
-                <label  class="form-label">액면가:</label><input type="text" id="fvalue" name="fvalue" > <br>
+                <h3>음원을 등록합니다</h3>
+                <label  class="form-label">곡명:</label><input type="text" id="issuer" name="issuer" > <br>
+                <label  class="form-label">원작자:</label><input type="text" id="pid" name="pid" > <br>
+                <label  class="form-label">음원길이:</label><input type="text" id="idate" name="idate" > <br>
+                <label  class="form-label">전체지분수량:</label><input type="text" id="mdate" name="mdate" > <br>
                 
-                <button class="btn btn-primary" id="new-btn">발행하기</button>
+                <button class="btn btn-primary" id="new-btn">등록하기</button>
             </div>   
         </div>
-        
+        <div class="row justify-content-md-center">
+            <div class="col-lg">
+                <div id="new-alert"></div>
+                <h3>음원 계약서 등록하기</h3>
+                <label  class="form-label">곡명:</label><input type="text" id="issuer" name="issuer" > <br>
+                <label  class="form-label">원작자:</label><input type="text" id="pid" name="pid" > <br>
+                <label  class="form-label">음원길이:</label><input type="text" id="idate" name="idate" > <br>
+                <label  class="form-label">기간설정:</label><input type="text" id="mdate" name="mdate" > <br>
+                
+                <button class="btn btn-primary" id="new-btn">등록하기</button>
+            </div>   
+        </div>
+
         <div class="row justify-content-md-center">
             <div class="col-lg">
                 <div id="add-alert"></div>
-                <h3>기업어음을 거래합니다</h3>
+                <h3>기간 음원대여 계약하기</h3>
+                <div>
+                    <form class="form-inline">
+                        <input class="form-control mr-sm-2" type="search" placeholder="곡명" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">검색</button>
+                      </form>
+                </div>
+                  
                 <label  class="form-label">어음ID:<input type="text" id="bpid" name="bpid" > <br>
                 <label  class="form-label">원소유자:<input type="text" id="bfrom" name="bfrom" > <br>
                 <label  class="form-label">새소유자:<input type="text" id="bto" name="bto" > <br>
@@ -199,7 +247,6 @@
         width: 300px;
         padding: 10px 8px;
     }
-
     .col-6{
         padding: 20px 10px;
     }

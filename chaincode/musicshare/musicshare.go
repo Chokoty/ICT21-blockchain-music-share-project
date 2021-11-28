@@ -49,6 +49,8 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 //
 	if fn == "register" {
 		result, err = t.registerMusic(APIstub, arg)
+	} else if fn == "initMusic" {
+		result, err = t.initMusic(APIstub)
 	} else if fn == "set" {
 		result, err = t.setContract(APIstub, arg)
 	} else if fn == "fill" {
