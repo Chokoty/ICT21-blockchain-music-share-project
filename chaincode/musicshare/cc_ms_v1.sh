@@ -15,28 +15,32 @@ docker exec cli peer chaincode install -n musicshare -v $version -p github.com/m
 #chaincode instatiate
 docker exec cli peer chaincode $instruction -n musicshare -v $version -C msharenet -c '{"Args":[]}' -P 'OR ("Org1MSP.member", "Org2MSP.member")'
 sleep 5
-# chaincode invoke music1
+# chaincode invoke init musics
 docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["initMusic"]}'
-# sleep 5
-# #chaincode invoke music1
-# docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["register","0006", "Into the Night","YOASOBI","4:23","100"]}'
-# sleep 5
-# #chaincode invoke music1
-# docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":[]}'
-# sleep 5
-# #chaincode query music1
-# docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["set","0001", "Mike", "2", ]}'
-# sleep 5
-# #chaincode invoke add rating
+sleep 5
+# chaincode invoke registerMusic
+docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["register","0006", "Into the Night","YOASOBI","4:23","100"]}'
+sleep 5
+# chaingcode query showMusicList
+docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["list"]}'
+sleep 5
+#chaincode invoke setContract
+docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["set","0001","Mike","2", "30"]}'
+sleep 5
+docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["set","0001","Alice","3", "30"]}'
+sleep 5
+docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["set","0001","Bob","0", "60"]}'
+sleep 5
+
 # docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["fill","0001","Mike","2"]}'
 # sleep 5
-# #chaincode query the contract of 0001
-# docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["query","0001"]}'
-# sleep 5
-# #chaincode query shared profit of 0001
-# docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["share","0001"]}'
-# sleep 5
-# #chaincode invoke stake of 0001
-# docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["expire","0001"]}'
+#chaincode query the contract of 0001
+docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["query","0001"]}'
+sleep 5
+#chaincode query shared profit of 0001
+docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["share","0001", "500000"]}'
+sleep 5
+#chaincode invoke stake of 0001
+docker exec cli peer chaincode query -n musicshare -C msharenet -c '{"Args":["expire","0001"]}'
 
 echo '-------------------------------------END-------------------------------------'
