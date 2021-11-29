@@ -120,13 +120,13 @@ async function cc_call(fn_name, args){
     var result;
 
     if(fn_name == 'issue'){
-        result = await contract.submitTransaction('issue', args[0],args[1],args[2],args[3],args[4]);
+        result = await contract.submitTransaction('issue', args[0],args[1],args[2],args[3],args[4]); //invoke
     }else if(fn_name == 'buy'){
         result = await contract.submitTransaction('buy', args[0],args[1],args[2],args[3]);
     }else if(fn_name == 'redeem'){
         result = await contract.submitTransaction('redeem', args[0],args[1],args[2]);
     }else if(fn_name == 'history'){
-        result = await contract.evaluateTransaction('history', args[0]);
+        result = await contract.evaluateTransaction('history', args[0]); // query
         console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
     }else{
         result = 'not supported function'
