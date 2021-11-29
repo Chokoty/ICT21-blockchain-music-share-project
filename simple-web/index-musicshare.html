@@ -146,8 +146,8 @@
             </div>
 
             <div class="d-grid gap-2 d-flex justify-content-center">
-                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample2">음원 후원하기</button>
-                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">음원 대여하기</button>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample2">음원 후원하기</button>
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">음원 대여하기</button>
             </div>
            
             <div class="row-lg">
@@ -199,33 +199,36 @@
     </div>
     <div class="p-5 mb-4 bg-light rounded-3"> 
         <div class="container w-50">    
-            <div id="add-alert" class="alert alert-primary" role="alert">
-            This is a primary alert with <a href="#" class="alert-link">an example link</a>. Give it a click if you like.
-            </div>
+            <div id="new-alert1"></div>
         <h3 class="mb-4 text-center">음원을 등록합니다</h3>
         <form class=" mx-auto">
+        </form>
             <div class="row">
                 <div class="col-12">
+                    <label for="id" class="col-form-label">곡ID</label>
+                    <input type="text" class="form-control" id="new-mid" name="id">
+                </div>
+                <div class="col-12">
                     <label for="title" class="col-form-label">곡명</label>
-                    <input type="text" class="form-control" id="title" name="title">
+                    <input type="text" class="form-control" id="new-title" name="title">
                 </div>
                 <div class="col-12">
                     <label for="artist" class=" col-form-label">원작자</label>
-                    <input type="text" class="form-control" id="artist" name="artist">      
+                    <input type="text" class="form-control" id="new-artist" name="artist">      
                 </div>
                 <div class="col-12">
                     <label for="length" class=" col-form-label">음원길이</label>
-                    <input type="text" class="form-control" id="length" name="length">
+                    <input type="text" class="form-control" id="new-length" name="length">
                 </div>
                 <div class="col-12">
                     <label for="total" class="col-form-label">전체지분수량</label>
-                    <input type="text" class="form-control" id="total" name="total">
+                    <input type="text" class="form-control" id="new-total" name="total">
+              
                 </div>
             </div>
             <div class="d-grid gap-2 d-flex justify-content-center">
-                <button type="submit" class="btn btn-primary me-md-2" id="new-btn">등록하기</button>       
+                <button class="btn btn-primary me-md-2" id="new-music-btn">등록하기</button>   
             </div>
-        </form>
     </div>
     </div>
     <div class="p-5 mb-4 bg-light rounded-3 "> 
@@ -238,19 +241,19 @@
             <div class="row">
                 <div class="col-12">
                     <label for="title" class="col-form-label">*곡명</label>
-                    <input type="text" class="form-control" id="title" name="title">
+                    <input type="text" class="form-control" id="new-title" name="title">
                 </div>
                 <div class="col-12">
                     <label for="artist" class=" col-form-label">*원작자</label>
-                    <input type="text" class="form-control" id="artist" name="artist">      
+                    <input type="text" class="form-control" id="new-artist" name="artist">      
                 </div>
                 <div class="col-12">
                     <label for="length" class=" col-form-label">수익 분배비율 설정, 사용범위설정</label>
-                    <input type="text" class="form-control" id="condition" name="condition">
+                    <input type="text" class="form-control" id="new-condition" name="condition">
                 </div>
                 <div class="col-12">
                     <label for="total" class="col-form-label">기간설정</label>
-                    <input type="text" class="form-control" id="due" name="due">
+                    <input type="text" class="form-control" id="new-due" name="due">
                 </div>
             </div>
             <div class="d-grid gap-2 d-flex justify-content-center">
@@ -315,6 +318,31 @@
 </body>
 
 <script>    
+    $("#new-music-btn").click(()=>{
+        // new-email이라는 id값을 가지고 있는 input의 value를 가지고 옴
+        const nmid = $("#new-mid").val();
+        const ntitle = $("#new-title").val();
+        const nartist = $("#new-artist").val();
+        const nlength = $("#new-length").val();
+        const ntotal = $("#new-total").val();
+        
+        const url = "/register"
+        
+        // email이라는 파라메터에 위의 value를 넣음
+        $.post(url, {nmid, ntitle, nartist, nlength, ntotal}, (data,status)=>{
+            // http 상태 코드가 200(success)이라면
+            console.log("!!!");
+            if(status == "success"){
+                // 성공했다는 alert창을 띄움
+                
+                $('#new-alert1').empty()
+                $('#new-alert1').append("<div id='success' class='alert alert-success'>발행에 성공했습니다!</div>");
+                $('#new-alert1').fadeIn(2000);
+                $('#new-alert1').fadeOut(4000);
+            }
+        })
+    })
+    
     $("#new-btn").click(()=>{
         // new-email이라는 id값을 가지고 있는 input의 value를 가지고 옴
         const issuer = $("#issuer").val();
