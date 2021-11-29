@@ -30,7 +30,7 @@
                 "peer0.org1.example.com"
             ],
             "certificateAuthorities": [
-                "ca.org1.example.com"
+                "ca.example.com"
             ]
         }
     },
