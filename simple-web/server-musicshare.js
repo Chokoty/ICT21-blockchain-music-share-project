@@ -27,7 +27,27 @@ app.get('/', (req, res)=>{
     res.sendFile(__dirname + '/index-musicshare.html');
 });
 
+// 음원등록 라우팅
+app.post('/register', async(req, res)=>{
+    
+    //nmid, ntitle, nartist, nlength, ntotal
+    const nmid = req.body.nmid;
+    const ntitle = req.body.ntitle;
+    const nartist = req.body.nartist;
+    const nlength = req.body.nlength;
+    const ntotal = req.body.ntotal;
+    console.log("got!")
+    try {
+        console.log(`register post routing - ${nmid}`);
 
+        cc_call('charge', [nmid,ntitle,nartist,nlength,ntotal], res)
+
+    }
+    catch (error) {
+        console.error(`Failed to submit transaction: ${error}`);
+    }
+
+});
 // paper issue // 생성
 app.post('/paper', async(req, res)=>{
     const mode = req.body.mode;
