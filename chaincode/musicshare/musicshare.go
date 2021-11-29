@@ -1,5 +1,6 @@
 package main
 
+//test
 import (
 	"bytes"
 	"encoding/json"
@@ -46,7 +47,7 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// Invoke : set & get > 원장에 데이터를 저장 / 조회 (key:value 형식)
 	var result string
 	var err error
-//
+	//
 	if fn == "register" {
 		result, err = t.registerMusic(APIstub, arg)
 	} else if fn == "initMusic" {
@@ -61,6 +62,8 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 		result, err = t.expire(APIstub, arg)
 	} else if fn == "share" {
 		result, err = t.shareProfit(APIstub, arg)
+	} else if fn == "list" {
+		result, err = t.showMusicList(APIstub)
 	} else {
 		return shim.Error("Not supporte chaincode function!!")
 	}
@@ -113,6 +116,48 @@ func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []s
 	return string(musicAsBytes), nil
 }
 
+// 음악 목록 출력
+func (t *MusicAsset) showMusicList(APIstub shim.ChaincodeStubInterface) (string, error) {
+	startKey := "0001"
+	endKey := "1000"
+
+	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
+	if err != nil {
+		return "Iterator error !!", err
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryResults
+	var buffer bytes.Buffer
+
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return "Iterator error !!", err
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString("\n")
+		}
+		buffer.WriteString("{\"곡ID\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"상세 정보 \":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}\n")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("\n")
+
+	fmt.Printf("- 음원 리스트 :\n%s\n", buffer.String())
+
+	return buffer.String(), nil
+}
+
 // 계약서 생성 : musicId, myId, stake, duration
 // date 추가하기
 func (t *MusicAsset) setContract(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
@@ -126,13 +171,19 @@ func (t *MusicAsset) setContract(APIstub shim.ChaincodeStubInterface, args []str
 	stake, _ := strconv.Atoi(args[2])
 	owner := music.Artist
 
-	// 만료기한 설정
+	// 판매가능한 지분이 없을 경우 종료
+	if music.EntireStake-stake < 0 {
+		return "no more stakes !! 남은 지분 수 : ", nil
+	}
 
+	// 만료기한 설정
 	now := time.Now()
 	convDays, _ := strconv.Atoi(args[3])
 	expired := now.AddDate(0, 0, convDays).Format("2006-01-02")
-	contract := Contract{MusicID: args[0], Owner: owner, Buyer: args[1], Stake: stake, Date: "", Expired: expired}
-
+	// 계약서 작성
+	contract := Contract{MusicID: args[0], Owner: owner, Buyer: args[1], Stake: stake, Date: now.Format("2006-01-02"), Expired: expired}
+	// 지분 차감 & 저장
+	music.EntireStake -= stake
 	music.Contracts = append(music.Contracts, contract)
 	musicAsBytes, _ = json.Marshal(music)
 
@@ -195,8 +246,8 @@ func (t *MusicAsset) queryContract(APIstub shim.ChaincodeStubInterface, args []s
 	if list == nil {
 		return "the list is empty !!", nil
 	}
-	list_d := music.Contracts // 후원자 list
-	list_c := music.Contracts // 2차창작자 list
+	list_d := []Contract{} // 후원자 list
+	list_c := []Contract{} // 2차창작자 list
 
 	// 후원자 : 2차창작자 분리
 	for _, l := range list {
@@ -214,10 +265,12 @@ func (t *MusicAsset) queryContract(APIstub shim.ChaincodeStubInterface, args []s
 		buffer.WriteString(" 후원 리스트\n")
 		for _, d := range list_d {
 			buffer.WriteString("소유주: ")
-			buffer.WriteString(d.Owner)
+			buffer.WriteString(d.Buyer)
 			buffer.WriteString(" 지분: ")
 			stake2str := strconv.Itoa(d.Stake)
 			buffer.WriteString(stake2str)
+			buffer.WriteString(" 구매일: ")
+			buffer.WriteString(d.Date)
 			buffer.WriteString(" 만료일: ")
 			buffer.WriteString(d.Expired)
 			buffer.WriteString("\n")
@@ -228,7 +281,9 @@ func (t *MusicAsset) queryContract(APIstub shim.ChaincodeStubInterface, args []s
 		buffer.WriteString(" 저작권 대여 리스트\n")
 		for _, c := range list_c {
 			buffer.WriteString("소유주: ")
-			buffer.WriteString(c.Owner)
+			buffer.WriteString(c.Buyer)
+			buffer.WriteString(" 구매일: ")
+			buffer.WriteString(c.Date)
 			buffer.WriteString(" 만료일: ")
 			buffer.WriteString(c.Expired)
 			buffer.WriteString("\n")
@@ -266,7 +321,7 @@ func (t *MusicAsset) shareProfit(APIstub shim.ChaincodeStubInterface, args []str
 	now := time.Now().Format("2006-01-02")
 	now2int, _ := strconv.Atoi(now)
 
-	// 지분
+	// 만료되지 않은 지분에 대해서 지분 계산
 	for _, l := range list {
 		expired2int, _ := strconv.Atoi(l.Expired)
 		left := expired2int - now2int
@@ -284,7 +339,7 @@ func (t *MusicAsset) shareProfit(APIstub shim.ChaincodeStubInterface, args []str
 		for _, d := range list_d {
 			share := whole * d.Stake / wholeStake
 			buffer.WriteString("소유주: ")
-			buffer.WriteString(d.Owner)
+			buffer.WriteString(d.Buyer)
 			buffer.WriteString(" 배당금: ")
 			buffer.WriteString(strconv.Itoa(share))
 			buffer.WriteString("\n")
