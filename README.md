@@ -8,6 +8,9 @@
 <br><br><br>
 <h2 align="center">프로젝트 설명 영상</h2>
 
+<p>[발표 ppt](https://ajouackr-my.sharepoint.com/:p:/g/personal/gmk0904_ajou_ac_kr/EepDOcI_F09IsZPSBPeBmqUBZV5PFodSU07uGPnU7pcd3w?e=oSnBpR)</p>
+
+
 <table>
 	<tr>
 		<td>
