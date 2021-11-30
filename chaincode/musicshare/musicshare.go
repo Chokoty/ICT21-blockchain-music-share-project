@@ -1,6 +1,5 @@
 package main
 
-//test
 import (
 	"bytes"
 	"encoding/json"
@@ -14,7 +13,7 @@ import (
 
 type Music struct {
 	MusicID     string     `json:"musichash"`
-	Name        string     `json:"name"`
+	Title        string     `json:"title"`
 	Artist      string     `json:"artist"`
 	Length      string     `json:"length"`
 	EntireStake int        `json:"entire_stake"`
@@ -23,11 +22,11 @@ type Music struct {
 	Donors      []Donor    `json: "donor"`
 }
 type Contract struct {
-	MusicID string `json:"musicID"` // Q : 또 필요한지
-	Owner   string `json:"owner"`   // set
+	MusicID string `json:"musicID"`
+	Owner   string `json:"owner"`   // condition?
 	Buyer   string `json:"buyer"`
-	Date    string `json:"date"`    // set
-	Expired string `json:"expired"` // set
+	Date    string `json:"date"`    // condition
+	Expired string `json:"expired"` // condition
 }
 type Donor struct {
 	Buyer   string `json: "buyer"`
@@ -51,10 +50,12 @@ func (t *MusicAsset) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
 func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	// CLI나 Application에서 전달되는 Argument 가져오기
 	fn, arg := APIstub.GetFunctionAndParameters()
+
 	// Invoke : sCoet & get > 원장에 데이터를 저장 / 조회 (key:value 형식)
 	var result string
 	var err error
-	//
+
+	// 기능 함수들
 	if fn == "register" {
 		result, err = t.registerMusic(APIstub, arg)
 	} else if fn == "initmusic" {
@@ -86,18 +87,19 @@ func (t *MusicAsset) Invoke(APIstub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success([]byte(result))
 }
 
+// 초기 음원데이터 생성
 func (t *MusicAsset) initMusic(APIstub shim.ChaincodeStubInterface) (string, error) {
 	musics := []Music{
 		Music{
-			MusicID: "0001", Name: "Savage", Artist: "Aespa", Length: "3:59", EntireStake: 200, Remains: 200, Contracts: nil},
+			MusicID: "0001", Title: "Savage", Artist: "Aespa", Length: "3:59", EntireStake: 200, Remains: 200, Contracts: nil},
 		Music{
-			MusicID: "0002", Name: "작은것들을위한시", Artist: "BTS", Length: "3:12", EntireStake: 300, Remains: 300, Contracts: nil},
+			MusicID: "0002", Title: "작은것들을위한시", Artist: "BTS", Length: "3:12", EntireStake: 300, Remains: 300, Contracts: nil},
 		Music{
-			MusicID: "0003", Name: "술한잔해요", Artist: "지아", Length: "4:13", EntireStake: 50, Remains: 50, Contracts: nil},
+			MusicID: "0003", Title: "술한잔해요", Artist: "지아", Length: "4:13", EntireStake: 50, Remains: 50, Contracts: nil},
 		Music{
-			MusicID: "0004", Name: "Tempo", Artist: "EXO", Length: "3:46", EntireStake: 150, Remains: 150, Contracts: nil},
+			MusicID: "0004", Title: "Tempo", Artist: "EXO", Length: "3:46", EntireStake: 150, Remains: 150, Contracts: nil},
 		Music{
-			MusicID: "0005", Name: "Enemy", Artist: "Imagine Dragons", Length: "2:53", EntireStake: 200, Remains: 200, Contracts: nil}}
+			MusicID: "0005", Title: "Enemy", Artist: "Imagine Dragons", Length: "2:53", EntireStake: 200, Remains: 200, Contracts: nil}}
 
 	for i := 0; i < len(musics); i++ {
 		fmt.Println("i is ", i)
@@ -108,15 +110,18 @@ func (t *MusicAsset) initMusic(APIstub shim.ChaincodeStubInterface) (string, err
 	return "", nil
 }
 
-// 음원 등록: musicID, 제목, 아티스트, 음악길이, 지분 생성 개수를 입력받음
+// 음원 등록
 func (t *MusicAsset) registerMusic(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	
+	// musicID, title, artist, length, 지분 생성 개수
 	if len(args) != 5 {
 		return "", fmt.Errorf("Incorrect arguments !!")
 	}
-	// 원작자가 요청한 개수만큼 지분 생성
+
+	// 원작자는 전체 지분을 설정
 	stake, _ := strconv.Atoi(args[4])
 
-	var music = Music{MusicID: args[0], Name: args[1], Artist: args[2], Length: args[3], EntireStake: stake, Remains: stake, Contracts: nil, Donors: nil}
+	var music = Music{MusicID: args[0], Title: args[1], Artist: args[2], Length: args[3], EntireStake: stake, Remains: stake, Contracts: nil, Donors: nil}
 	musicAsBytes, _ := json.Marshal(music)
 	err := APIstub.PutState(args[0], musicAsBytes)
 
@@ -141,7 +146,10 @@ func (t *MusicAsset) showMusicList(APIstub shim.ChaincodeStubInterface) (string,
 	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
 
+	buffer.WriteString("[")
+
 	bArrayMemberAlreadyWritten := false
+
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
@@ -149,18 +157,18 @@ func (t *MusicAsset) showMusicList(APIstub shim.ChaincodeStubInterface) (string,
 		}
 		// Add a comma before array members, suppress it for the first array member
 		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(" ")
+			buffer.WriteString(", ")
 		}
-		buffer.WriteString("곡ID: ")
+		buffer.WriteString("{\"")
 		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString(" ")
+		buffer.WriteString("\":")
 
-		buffer.WriteString("상세 정보: ")
 		// Record is a JSON object, so we write as-is
 		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString(" ")
+		buffer.WriteString("}")
 		bArrayMemberAlreadyWritten = true
 	}
+	buffer.WriteString("]")
 
 	fmt.Printf("- 음원 리스트 :\n%s\n", buffer.String())
 
@@ -168,11 +176,10 @@ func (t *MusicAsset) showMusicList(APIstub shim.ChaincodeStubInterface) (string,
 	// 안될경우 바이트코드로 변환
 }
 
-// 이용자 계약서 내용 채우기  : 음원ID -> 계약내용 추가
-// 후원자 음원 후원         - stake N
-// 2차 창작자 음원 대여 구매 - stake 0
-// musicID, Buyer, Stake, 계약조건
+// 원작자 계약조건 작성
 func (t *MusicAsset) addCondition(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	
+	// musicID, Buyer, Stake, 계약조건
 	if len(args) != 4 {
 		return "", fmt.Errorf("Incorrect arguments !!")
 	}
@@ -210,7 +217,7 @@ func (t *MusicAsset) addCondition(APIstub shim.ChaincodeStubInterface, args []st
 }
 
 // 계약서 작성 : musicId, myId, duration
-// date 추가하기
+// date 추가하기 add condition
 func (t *MusicAsset) makeContract(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
 	if len(args) != 3 {
 		return "", fmt.Errorf("Incorrect number of arguments !!")
@@ -315,11 +322,13 @@ func (t *MusicAsset) queryContract(APIstub shim.ChaincodeStubInterface, args []s
 }
 
 // 후원자 조회
-// musicID
 func (t *MusicAsset) queryDonor(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	
+	// musicID
 	if len(args) != 1 {
 		return "", fmt.Errorf("Incorrect number of arguments. Expecting 1")
 	}
+
 	// musicID로 조회 & 해당 음악의 지분 리스트 추출
 	musicAsBytes, _ := APIstub.GetState(args[0])
 	music := Music{}
@@ -352,8 +361,10 @@ func (t *MusicAsset) queryDonor(APIstub shim.ChaincodeStubInterface, args []stri
 	return buffer.String(), err
 }
 
-// 만기 지분 수거 : musicId
+// 만기 지분 수거 : 아직 웹에서 미사용
 func (t *MusicAsset) expire(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {
+	
+	// musicId
 	if len(args) != 1 {
 		return "", fmt.Errorf("Incorrect number of arguments. Expecting 1")
 	}
@@ -388,7 +399,7 @@ func (t *MusicAsset) expire(APIstub shim.ChaincodeStubInterface, args []string) 
 	return "지분 수거 완료", nil
 }
 
-// 수익 분배 : musicId, profit
+// 수익 분배 : musicId, profit(원작자 것만 구현)
 // 원작자 수익 -> 지분에 따라 후원자에게 분배
 // 2차 창작자 수익 -> 계약 내용에 따라 원작자에게 분배
 func (t *MusicAsset) shareProfit(APIstub shim.ChaincodeStubInterface, args []string) (string, error) {

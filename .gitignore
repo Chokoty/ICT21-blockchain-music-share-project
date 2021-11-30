@@ -1,3 +1,4 @@
 # ignore package
 /simple-web/node_modules/
 /simple-web/package-lock.json
+/simple-web/wallet/

@@ -13,7 +13,7 @@ set -ev
 #chaincode install
 docker exec cli peer chaincode install -n musicshare -v $version -p github.com/musicshare
 #chaincode instatiate
-docker exec cli peer chaincode $instruction -n musicshare -v $version -C msharenet -c '{"Args":[]}' -P 'OR ("Org1MSP.member", "Org2MSP.member")'
+docker exec cli peer chaincode $instruction -n musicshare -v $version -C msharenet -c '{"Args":[]}' -P 'OR ("Org1MSP.member")'
 sleep 5
 # chaincode invoke init musics
 docker exec cli peer chaincode invoke -n musicshare -C msharenet -c '{"Args":["initmusic"]}'

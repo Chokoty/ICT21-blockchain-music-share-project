@@ -8,6 +8,7 @@ version: '2'
 networks:
   basic:
 
+    null
 services:
   ca.example.com:
     image: hyperledger/fabric-ca
@@ -40,9 +41,9 @@ services:
     ports:
       - 7050:7050
     volumes:
-        - ./config/:/etc/hyperledger/configtx
-        - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
+      - ./config/:/etc/hyperledger/configtx
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
     networks:
       - basic
 
@@ -74,10 +75,10 @@ services:
     ports:
       - 7051:7051
     volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp/peer
-        - ./crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
-        - ./config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
+      - ./config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
       - couchdb1
@@ -112,16 +113,16 @@ services:
     ports:
       - 8051:7051
     volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/msp/peer
-        - ./crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
-        - ./config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/msp/peer
+      - ./crypto-config/peerOrganizations/org2.example.com/users:/etc/hyperledger/msp/users
+      - ./config:/etc/hyperledger/configtx
     depends_on:
       - orderer.example.com
       - couchdb2
     networks:
       - basic
-      
+
   couchdb1:
     container_name: couchdb1
     image: hyperledger/fabric-couchdb
@@ -164,9 +165,9 @@ services:
     working_dir: /etc/hyperledger/configtx
     command: /bin/bash
     volumes:
-        - /var/run/:/host/var/run/
-        - ./../chaincode/:/opt/gopath/src/github.com/
-        - ./crypto-config:/etc/hyperledger/crypto
-        - ./config:/etc/hyperledger/configtx
+      - /var/run/:/host/var/run/
+      - ./../chaincode/:/opt/gopath/src/github.com/
+      - ./crypto-config:/etc/hyperledger/crypto
+      - ./config:/etc/hyperledger/configtx
     networks:
-        - basic
+      - basic

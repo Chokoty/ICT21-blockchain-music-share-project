@@ -45,9 +45,10 @@ app.post('/music', async(req, res)=>{
     try {
         console.log(`music post routing - ${nmid}`);
         await cc_call('register', [nmid,ntitle,nartist,nlength,ntotal])
-        console.log("succeed")
+        console.log("success")
         
         const myobj = {result: "success"}
+        console.log(myobj.result)
         res.status(200).json(myobj)
     }
     catch (error) {
@@ -112,16 +113,17 @@ app.post('/music', async(req, res)=>{
 
 
 // // music get 라우팅 - 음악조회
-// app.get('/music', async(req, res)=>{
-//     // mquery
+app.get('/music', async(req, res)=>{
+    // mquery
+
     
-// });
+});
 
 // // music get 라우팅 - 후원자조회
-// app.get('/music', async(req, res)=>{
-//     // mquery
+app.get('/music', async(req, res)=>{
+    // dquery
     
-// });
+});
 
 // music get 라우팅 - 계약조회
 app.get('/music', async(req, res)=>{
@@ -189,6 +191,7 @@ app.post('/contract', async(req, res)=>{
         console.error(`Failed to submit transaction: ${error}`);
         const myobj = {result: "failed"}
         res.status(200).json(myobj);
+    }
 });
 
 // contract put 라우팅 - 만기계약리셋
