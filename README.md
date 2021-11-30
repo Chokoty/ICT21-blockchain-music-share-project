@@ -64,7 +64,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td><div align="center"><img src="/imgs/demo1.gif"></div></td>
+			<td><div align="center"><img src="/imgs/demo-1.gif"></div></td>
 		</tr>
 		<tr>
 			<td colspan=2>
@@ -74,7 +74,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td><div align="center"><img src="/imgs/demo2.gif"></div></td>
+			<td><div align="center"><img src="/imgs/demo-2.gif"></div></td>
 		</tr>
 	</tbody>
 </table><br>
