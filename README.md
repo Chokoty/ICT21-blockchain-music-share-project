@@ -79,6 +79,12 @@
 		<tr>
 			<td><div align="center"><img src="/imgs/demo-2.gif"></div></td>
 		</tr>
+		<tr>
+			<td><div align="center"><img src="/imgs/web10.png"></div></td>
+		</tr>
+		<tr>
+			<td><div align="center"><img src="/imgs/web11.png"></div></td>
+		</tr>
 	</tbody>
 </table><br>
 
