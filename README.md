@@ -1,4 +1,4 @@
-<p align="center"><img src="/imgs/museShare-logo.jpg"></p>
+<p align="center"><img width="500px" src="/imgs/museShare-logo.jpg"></p>
 
 </p>
 <p align="center">
