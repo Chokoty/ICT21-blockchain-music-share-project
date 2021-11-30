@@ -28,14 +28,100 @@
 </table>
 
 ## 프로젝트 설명  
-<p><b>museShare</b>는 .</p>
+<p>
+	<b>museShare</b>는 블록체인기술을 이용한 음원 NFT 등록과 <br>
+	기간동안 음원이용 계약을 중개해주는 서비스 입니다.<br> 
+</p>
 <br>
+<p>
+	음원대여 계약을 통해 2차창작자들이 원곡을 이용한 수익창출을 장려하고<br>
+	나아가 원곡자와 수익을 공유함으로써 원곡자의 저작권을 보호하는 동시에<br> 
+	원곡의 활용도를 높여 음악시장의 활성화를 목표로 하고 있습니다.<br> 
+</p>
+<br>
+<p>
+	신인 아티스트들의 음악계 대뷔 장려, <br>
+	후원자들의 직접적인 소통의 플랫폼으로 나아가고자 합니다.
+</p>
 
-
-
+<br>
 ## 기능 설계
  
+<table>
+        <tbody>
+		<tr>
+			<td colspan=2>
+				<br>
+				<b>ㆍ ☕ 한국저작권협회 인증을 통한 디지털음원 등록,관리 서비스</b><br>
+				<br>
+			</td>
+		</tr>
+		<tr>
+            <td rowspan="2"><div align="center"><a href="https://raw.githubusercontent.com/osamhack2020/WEB_KookbangFriends_Woowahan/master/image/consulting1.jpg"><img src="/image/consulting1.jpg" width="60%" height="60%"></a></div></td>
+            <td width="33%">블록체인 보안 기술 적용</td>
+        </tr>
+        <tr>
+            <td>신뢰성 있는 인증</td>
+        </tr>
+        <tr>
+            <td rowspan="2"><div align="center"><a href="https://raw.githubusercontent.com/osamhack2020/WEB_KookbangFriends_Woowahan/master/image/consulting2.jpg"><img src="/image/consulting2.jpg" width="60%" height="60%"></a></div></td>
+           <td></td>
+        </tr>
+        <tr>
+           <td>기존 음원저작권 인프라 개선</td>
+        </tr>
+   </tbody>
+</table>
+<br><br>
 
+<table>
+        <tbody>
+		<tr>
+			<td colspan=2>
+				<br>
+				<b>ㆍ 💖 음원 후원 서비스</b><br>
+				<br>
+			</td>
+		</tr>
+		<tr>
+            <td rowspan="2"><div align="center"><a href="https://raw.githubusercontent.com/osamhack2020/WEB_KookbangFriends_Woowahan/master/image/sns1.jpg"><img src="/image/sns1.jpg" width="60%" height="60%"></a></div></td>
+            <td width="33%">후원자등의 음원에 등록된 지분내에서 후원가능</td>
+        </tr>
+        <tr>
+            <td>후원한 비율에 따라 원작자와 일부수익을 공유함</td>
+        </tr>
+        
+   </tbody>
+</table>
+<table>
+        <tbody>
+		<tr>
+			<td colspan=2>
+				<br>
+				<b>ㆍ 💖 음원 대여 서비스</b><br>
+				<br>
+			</td>
+		</tr>
+		<tr>
+            <td rowspan="2"><div align="center"><a href="https://raw.githubusercontent.com/osamhack2020/WEB_KookbangFriends_Woowahan/master/image/sns1.jpg"><img src="/image/sns1.jpg" width="60%" height="60%"></a></div></td>
+            <td width="33%">2차 창작자, 간편하게 대여 계약을 통해 기간동안 원곡을 통한 수익 실현이 가능</td>
+        </tr>
+        <tr>
+            <td>계약에 작성한 수익 비율에 따라 분기별 수익이 발생하면 수익을 분배</td>
+        </tr>
+        <tr>
+            <td rowspan="2"><div align="center"><a href="https://raw.githubusercontent.com/osamhack2020/WEB_KookbangFriends_Woowahan/master/image/sns2.jpg"><img src="/image/sns2.jpg" width="60%" height="60%"></a></div></td>
+           <td>약기간 연장 기능</td>
+        </tr>
+        <tr>
+           <td>계약 이력 확인 기능</td>
+        </tr>
+   </tbody>
+</table>
+
+<br>
+<br>
+<br>
 ## 개발 프로젝트 사용법 (Getting Started)
 
 <p>
